@@ -34,12 +34,12 @@ struct fb_progress_bar {
     char percents[4];
 };
 
-int text_width(char* text) 
+int string_width(char* string)
 {
-    return strlen(text) * CHAR_WIDTH;
+    return strlen(string) * CHAR_WIDTH;
 }
 
-struct fb_progress_bar* fb_progress_bar_new(struct fb_fb *fb, char *text, uint32_t max_width)
+struct fb_progress_bar* fb_progress_bar_new(struct fb *fb, char *text, uint32_t max_width)
 {
     struct fb_progress_bar *progress = malloc(sizeof(struct fb_progress_bar));
 
@@ -61,19 +61,19 @@ void fb_progess_bar_set_progress(struct fb_progress_bar *p, int percent)
     sprintf(p->percents, "%d\%%", percent);
 }
 
-void fb_progress_bar_draw(struct fb_progress_bar *p, struct fb_fb *fb) 
+void fb_progress_bar_draw(struct fb_progress_bar *p, struct fb *fb)
 {
     int line_length = fb->fix_screen_info.line_length;
 
     drawRect(p->x, p->y, p->x + p->max_width, p->y + p->h, makeColor(0x55, 0x55, 0x55), fb->screen, line_length); 
     drawRect(p->x, p->y, p->x + p->w, p->y + p->h, makeColor(0xff, 0, 0), fb->screen, line_length); 
 
-    int text_width = strlen(p->percents) * 8;
+    int text_width = string_width(p->percents);
     int text_x = p->x  + p->max_width / 2 - text_width / 2;
 
     drawStr816(text_x, p->y + 18, makeColor(0xff, 0xff, 0xff), p->percents, VGA_FONT_16, fb->screen, line_length);
 
-    text_width = strlen(p->text) * 8;
+    text_width = string_width(p->text);
     text_x = p->x + p->max_width / 2 - text_width / 2;
     drawStr816(text_x, p->y - 20, makeColor(0xff, 0xff, 0xff), p->text, VGA_FONT_16, fb->screen, line_length);
 }
@@ -85,10 +85,10 @@ void fb_progress_bar_destroy(struct fb_progress_bar *p)
     free(p);
 }
 
-struct fb_button* fb_button_new(uint32_t x, uint32_t y, const char *text, uint32_t index)
+struct fb_button* fb_button_new(uint32_t x, uint32_t y, char *text, uint32_t index)
 {
     struct fb_button *btn = malloc(sizeof(struct fb_button));
-    int text_width = strlen(text) * 8;
+    int text_width = string_width(text);
     int button_width = text_width + 40;
     btn->x = x;
     btn->y = y;
@@ -100,12 +100,12 @@ struct fb_button* fb_button_new(uint32_t x, uint32_t y, const char *text, uint32
     return btn;
 }
 
-void fb_button_draw(struct fb_button *btn, struct fb_fb *fb) 
+void fb_button_draw(struct fb_button *btn, struct fb *fb) 
 {
     int line_length = fb->fix_screen_info.line_length;
     drawRect(btn->x, btn->y, btn->x + btn->w, btn->y + btn->h, makeColor(0x55, 0x55, 0x55), fb->screen, line_length); 
 
-    int text_width = strlen(btn->text) * 8;
+    int text_width = string_width(btn->text);
 
     int text_x = btn->x  + btn->w / 2 - text_width / 2;
 
@@ -126,7 +126,7 @@ int fb_button_pressed(struct fb_button *b, int p_x, int p_y)
 }
 
 
-void display_progress(struct fb_fb *fb, char *options)
+void display_progress(struct fb *fb, char *options)
 {
     char *width = strtok(options, ",");
     char *text = strtok(NULL, ",");
@@ -146,7 +146,7 @@ void display_progress(struct fb_fb *fb, char *options)
 
 
 
-void handle_confirm(struct tsdev *ts, struct fb_fb *fb, char *text_for_buttons) 
+void handle_confirm(struct tsdev *ts, struct fb *fb, char *text_for_buttons)
 {
     char *btn1_text = strtok(text_for_buttons, ",");
     char *btn2_text = strtok(NULL, ",");
@@ -188,11 +188,11 @@ void handle_confirm(struct tsdev *ts, struct fb_fb *fb, char *text_for_buttons)
     fb_button_destroy(btn2);
 }
 
-void draw_message_box(struct fb_fb *fb, char *message)
+void draw_message_box(struct fb *fb, char *message)
 {
 
     int line_length = fb->fix_screen_info.line_length;
-    int text_width = strlen(message) * 8;
+    int text_width = string_width(message);
 
     int x = fb->w / 2 - 250;
 
@@ -209,7 +209,7 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    struct fb_fb fb;
+    struct fb fb;
     if (init_fb(&fb)) {
         perror("Could not initialize framebuffer");
         return 1;
