@@ -4,6 +4,8 @@ Simple utility to display progress bar with a few buttons and read events from t
 
 Uses libts for reading and handling touchscreen events.
 
+Before running you need to do `export TSLIB_CALIBFILE=[path_to_calibrationfile]` in order for the touch events to be handleled correctly.
+
 # Usage: fb-dialog
 * --gauge [width,text] -- Display progress bar that has title `[text]` and is `[width]` pixels wide. Reads progress from stdin just like to the `dialog` tool.
 * --message [message] -- Display a message box with text `[message]`
