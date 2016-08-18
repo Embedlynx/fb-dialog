@@ -1,3 +1,13 @@
+/*
+ * main.c 
+ *
+ * Copyright (C) 2016 Rangel Ivanov <rangelivanov88@gmail.com>
+ *
+ * This file is placed under the LGPL.  Please see the file
+ * COPYING for more details.
+ *
+ * Misc utils for ts test programs
+ */
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
