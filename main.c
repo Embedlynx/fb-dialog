@@ -170,13 +170,13 @@ void handle_confirm(struct tsdev *ts, struct fb *fb, char *text_for_buttons)
         printf("x=%d y=%d\n", p_x, p_y); 
         button_index = fb_button_pressed(btn1, p_x, p_y);
         if (button_index != -1) {
-            printf("Choice %d\n", button_index);
+            printf("%d\n", button_index);
             break;
         }
 
         button_index = fb_button_pressed(btn2, p_x, p_y);
         if (button_index != -1) {
-            printf("Choice %d\n", button_index);
+            printf("%d\n", button_index);
             break;
         }
 
@@ -217,44 +217,43 @@ int main(int argc, char **argv)
 
     int c;
 
-  while (1) {
-      static struct option long_options[] =
-        {
-          /* These options don’t set a flag.
-             We distinguish them by their indices. */
-          {"gauge",  required_argument, 0, 'g'},
-          {"confirm",  required_argument, 0, 'c'},
-          {"message",  required_argument, 0, 'm'},
-          {0, 0, 0, 0}
-        };
-      /* getopt_long stores the option index here. */
-      int option_index = 0;
+    while (1) {
+        static struct option long_options[] =
+            {
+              /* These options don’t set a flag.
+                 We distinguish them by their indices. */
+              {"gauge",  required_argument, 0, 'g'},
+              {"confirm",  required_argument, 0, 'c'},
+              {"message",  required_argument, 0, 'm'},
+              {0, 0, 0, 0}
+            };
+        /* getopt_long stores the option index here. */
+        int option_index = 0;
 
-      c = getopt_long(argc, argv, "g:c:m:", long_options, &option_index);
+        c = getopt_long(argc, argv, "g:c:m:", long_options, &option_index);
 
-      /* Detect the end of the options. */
-      if (c == -1)
-        break;
+        /* Detect the end of the options. */
+        if (c == -1)
+            break;
 
-      switch (c) {
+        switch (c) {
+            case 'g':
+              display_progress(&fb, optarg);
+              break;
 
-        case 'g':
-          display_progress(&fb, optarg);
-          break;
+            case 'c':
+              handle_confirm(ts, &fb, optarg);
+              break;
 
-        case 'c':
-          handle_confirm(ts, &fb, optarg);
-          break;
+            case 'm':
+              draw_message_box(&fb, optarg);
+              break;
 
-        case 'm':
-          draw_message_box(&fb, optarg);
-          break;
+            case '?':
+              break;
 
-        case '?':
-          break;
-
-        default:
-          abort();
+            default:
+              abort();
         }
     }
 
