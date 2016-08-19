@@ -1,5 +1,9 @@
 # Run make in project dir
-build:
-	gcc -Wall main.c fb_utils.c testutils.c pipe_utils.c -lts -o fb-dialog
+
+CFLAGS += -lts -Wall
+
+fb-dialog: main.c fb_utils.c testutils.c pipe_utils.c
+	$(CC) $(CFLAGS) $^ -o $@
+
 clean:
-	rm fb-dialog	
+	-rm fb-dialog
