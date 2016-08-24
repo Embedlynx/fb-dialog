@@ -177,7 +177,6 @@ void handle_confirm(struct tsdev *ts, struct fb *fb, char *text_for_buttons)
     int button_index = -1;
     while (1) {
         getxy(ts, &p_x, &p_y);
-        printf("x=%d y=%d\n", p_x, p_y); 
         button_index = fb_button_pressed(btn1, p_x, p_y);
         if (button_index != -1) {
             printf("%d\n", button_index);
