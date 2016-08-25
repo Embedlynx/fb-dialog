@@ -22,6 +22,7 @@
 #define PROGRESS_HEIGHT 50
 #define PADDING 60
 #define CHAR_WIDTH 8
+#define PIPE_BUFFER_SIZE 6
 
 struct fb_button {
     uint32_t x;
@@ -41,7 +42,7 @@ struct fb_progress_bar {
     uint32_t max_width;
 
     char *text;
-    char percents[4];
+    char percents[PIPE_BUFFER_SIZE];
 };
 
 int string_width(char* string)
@@ -143,12 +144,14 @@ void display_progress(struct fb *fb, char *options)
     struct fb_progress_bar *progress = fb_progress_bar_new(fb, text, atoi(width));
     fb_progress_bar_draw(progress, fb);
 
-    char data[4];
+    char data[PIPE_BUFFER_SIZE];
     int status;
-    while ((status = poll_and_read(stdin, data, 4)) > 0 ){
-        int c = atoi(data);
-        fb_progess_bar_set_progress(progress, c);
-        fb_progress_bar_draw(progress, fb);
+    while ((status = poll_and_read(stdin, data, PIPE_BUFFER_SIZE)) > 0 ){
+        if (strlen(data) <= PIPE_BUFFER_SIZE - 1) {
+            int c = atoi(data);
+            fb_progess_bar_set_progress(progress, c);
+            fb_progress_bar_draw(progress, fb);
+        }
     }
 
     fb_progress_bar_destroy(progress);
