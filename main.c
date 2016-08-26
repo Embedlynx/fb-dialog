@@ -23,6 +23,8 @@
 #define PADDING 60
 #define CHAR_WIDTH 8
 #define PIPE_BUFFER_SIZE 6
+#define MESSAGE_BOX_WIDTH 500
+#define MESSAGE_BOX_HEIGHT 200
 
 struct fb_button {
     uint32_t x;
@@ -136,7 +138,6 @@ int fb_button_pressed(struct fb_button *b, int p_x, int p_y)
     return pressed == 1 ? b->index : -1;
 }
 
-
 void display_progress(struct fb *fb, char *options)
 {
     char *width = strtok(options, ",");
@@ -157,17 +158,33 @@ void display_progress(struct fb *fb, char *options)
     fb_progress_bar_destroy(progress);
 }
 
+void draw_message_box(struct fb *fb, char *message, int y_pos)
+{
 
+    int line_length = fb->fix_screen_info.line_length;
+    int text_width = string_width(message);
+
+    int x = fb->w / 2 - MESSAGE_BOX_WIDTH / 2;
+
+    drawRect(x, y_pos, x + MESSAGE_BOX_WIDTH, y_pos + MESSAGE_BOX_HEIGHT, makeColor(0x55, 0x55, 0x55), fb->screen, line_length);
+    int text_x = x + MESSAGE_BOX_WIDTH / 2- text_width / 2;
+    drawStr816(text_x, y_pos + MESSAGE_BOX_HEIGHT/2, makeColor(0xff, 0xff, 0xff), message, VGA_FONT_16, fb->screen, line_length);
+}
 
 void handle_confirm(struct tsdev *ts, struct fb *fb, char *text_for_buttons)
 {
     char *btn1_text = strtok(text_for_buttons, ",");
     char *btn2_text = strtok(NULL, ",");
+    char *message_text = strtok(NULL, ",");
+
+    if (message_text) {
+        draw_message_box(fb, message_text, 30);
+    }
     uint32_t center_x = fb->w / 2; 
     uint32_t center_y = fb->h / 2;
 
-    int btn1_width = strlen(btn1_text) * 8 + PADDING;
-    int btn2_width = strlen(btn2_text) * 8 + PADDING; 
+    int btn1_width = string_width(btn1_text) + PADDING;
+    int btn2_width = string_width(btn2_text) + PADDING;
     uint32_t button1_x = fb->w / 2 - (btn1_width + btn2_width + PADDING) / 2;
 
     struct fb_button *btn1 = fb_button_new(button1_x, center_y, btn1_text, 0);
@@ -198,19 +215,6 @@ void handle_confirm(struct tsdev *ts, struct fb *fb, char *text_for_buttons)
 
     fb_button_destroy(btn1);
     fb_button_destroy(btn2);
-}
-
-void draw_message_box(struct fb *fb, char *message)
-{
-
-    int line_length = fb->fix_screen_info.line_length;
-    int text_width = string_width(message);
-
-    int x = fb->w / 2 - 250;
-
-    drawRect(x, 75, x + 500, 275, makeColor(0x55, 0x55, 0x55), fb->screen, line_length); 
-    int text_x = x + 250 - text_width / 2;
-    drawStr816(text_x, 165, makeColor(0xff, 0xff, 0xff), message, VGA_FONT_16, fb->screen, line_length);
 }
 
 int main(int argc, char **argv)
@@ -258,7 +262,7 @@ int main(int argc, char **argv)
               break;
 
             case 'm':
-              draw_message_box(&fb, optarg);
+              draw_message_box(&fb, optarg, 75);
               break;
 
             case '?':
