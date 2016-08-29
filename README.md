@@ -9,4 +9,4 @@ Before running you need to do `export TSLIB_CALIBFILE=[path_to_calibrationfile]`
 # Usage: fb-dialog
 * --gauge [width,text] -- Display progress bar that has title `[text]` and is `[width]` pixels wide. Reads progress from stdin just like to the `dialog` tool.
 * --message [message] -- Display a message box with text `[message]`
-* --confirm [button1-text, button2-text] -- Display two confirmation buttons with text and wait for touch events from touchscreen/libts. After a button is pressed the index of the pressed button (0 or 1) is printed to stdout.
+* --confirm [button1-text, button2-text, message] -- Display two confirmation buttons with text and wait for touch events from touchscreen/libts. After a button is pressed the index of the pressed button (0 or 1) is printed to stdout. If `message` parameter is present, a message box will be displayed with the message text.
