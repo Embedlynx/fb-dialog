@@ -158,17 +158,34 @@ void display_progress(struct fb *fb, char *options)
     fb_progress_bar_destroy(progress);
 }
 
+void draw_message_text(struct fb *fb, int x, int y, char *message)
+{
+    int line_length = fb->fix_screen_info.line_length;
+    char *new_line = "\x0A";
+    int lines = 0;
+    char *text = strtok(message, new_line);
+    int text_width = string_width(text);
+    int text_x = x + MESSAGE_BOX_WIDTH / 2 - text_width / 2;
+    drawStr816(text_x, y + MESSAGE_BOX_HEIGHT/2, makeColor(0xff, 0xff, 0xff), message, VGA_FONT_16, fb->screen, line_length);
+
+    while ((text = strtok(NULL, new_line)) > 0) {
+        lines++;
+        text_width = string_width(text);
+        text_x = x + MESSAGE_BOX_WIDTH / 2 - text_width / 2;
+        drawStr816(text_x, y + MESSAGE_BOX_HEIGHT/2 + 18 * lines, makeColor(0xff, 0xff, 0xff), text, VGA_FONT_16, fb->screen, line_length);
+    }
+}
+
 void draw_message_box(struct fb *fb, char *message, int y_pos)
 {
-
     int line_length = fb->fix_screen_info.line_length;
     int text_width = string_width(message);
 
     int x = fb->w / 2 - MESSAGE_BOX_WIDTH / 2;
 
     drawRect(x, y_pos, x + MESSAGE_BOX_WIDTH, y_pos + MESSAGE_BOX_HEIGHT, makeColor(0x55, 0x55, 0x55), fb->screen, line_length);
-    int text_x = x + MESSAGE_BOX_WIDTH / 2- text_width / 2;
-    drawStr816(text_x, y_pos + MESSAGE_BOX_HEIGHT/2, makeColor(0xff, 0xff, 0xff), message, VGA_FONT_16, fb->screen, line_length);
+
+    draw_message_text(fb, x, y_pos, message);
 }
 
 void handle_confirm(struct tsdev *ts, struct fb *fb, char *text_for_buttons)
