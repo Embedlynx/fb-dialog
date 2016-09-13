@@ -45,6 +45,7 @@ struct fb_progress_bar {
 
     char *text;
     char percents[PIPE_BUFFER_SIZE];
+    uint32_t progress;
 };
 
 int string_width(char* string)
@@ -64,12 +65,21 @@ struct fb_progress_bar* fb_progress_bar_new(struct fb *fb, char *text, uint32_t 
     progress->h = PROGRESS_HEIGHT;
     progress->text = strdup(text);
     progress->max_width = max_width;
+    progress->progress = 0;
 
     return progress;
 }
 
 void fb_progess_bar_set_progress(struct fb_progress_bar *p, int percent)
 {
+    if (percent > 100) {
+        percent = 100;
+    }
+
+    if (p->progress == 100) {
+        return;
+    }
+    p->progress = percent;
     p->w = percent * 0.01 * p->max_width;
     sprintf(p->percents, "%d\%%", percent);
 }
@@ -148,11 +158,9 @@ void display_progress(struct fb *fb, char *options)
     char data[PIPE_BUFFER_SIZE];
     int status;
     while ((status = poll_and_read(stdin, data, PIPE_BUFFER_SIZE)) > 0 ){
-        if (strlen(data) <= PIPE_BUFFER_SIZE - 1) {
-            int c = atoi(data);
-            fb_progess_bar_set_progress(progress, c);
-            fb_progress_bar_draw(progress, fb);
-        }
+        int c = atoi(data);
+        fb_progess_bar_set_progress(progress, c);
+        fb_progress_bar_draw(progress, fb);
     }
 
     fb_progress_bar_destroy(progress);
