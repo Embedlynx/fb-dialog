@@ -202,11 +202,12 @@ void handle_confirm(struct tsdev *ts, struct fb *fb, char *text_for_buttons)
     char *btn2_text = strtok(NULL, ",");
     char *message_text = strtok(NULL, ",");
 
+    uint32_t center_x = fb->w / 2; 
+    uint32_t center_y = fb->h / 2;
+
     if (message_text) {
         draw_message_box(fb, message_text, 30);
     }
-    uint32_t center_x = fb->w / 2; 
-    uint32_t center_y = fb->h / 2;
 
     int btn1_width = string_width(btn1_text) + PADDING;
     int btn2_width = string_width(btn2_text) + PADDING;
@@ -241,6 +242,38 @@ void handle_confirm(struct tsdev *ts, struct fb *fb, char *text_for_buttons)
     fb_button_destroy(btn1);
     fb_button_destroy(btn2);
 }
+void handle_info_message(struct tsdev *ts, struct fb *fb, char *args)
+{
+    char *btn_text = strtok(args, ",");
+    char *message_text = strtok(NULL, ",");
+
+    uint32_t center_x = fb->w / 2;
+    uint32_t center_y = fb->h / 2;
+
+    draw_message_box(fb, message_text, 30);
+
+    int btn_width = string_width(btn_text) + PADDING;
+    uint32_t button_x = fb->w / 2 - (btn_width) / 2;
+
+    struct fb_button *btn = fb_button_new(button_x, center_y, btn_text, 0);
+
+    fb_button_draw(btn, fb);
+
+    int p_x, p_y;
+    int button_index = -1;
+    while (1) {
+        getxy(ts, &p_x, &p_y);
+        button_index = fb_button_pressed(btn, p_x, p_y);
+        if (button_index != -1) {
+            printf("%d\n", button_index);
+            break;
+        }
+
+        fb_button_draw(btn, fb);
+    }
+
+    fb_button_destroy(btn);
+}
 
 int main(int argc, char **argv)
 {
@@ -266,6 +299,7 @@ int main(int argc, char **argv)
               {"gauge",  required_argument, 0, 'g'},
               {"confirm",  required_argument, 0, 'c'},
               {"message",  required_argument, 0, 'm'},
+              {"info",  required_argument, 0, 'i'},
               {0, 0, 0, 0}
             };
         /* getopt_long stores the option index here. */
@@ -288,6 +322,9 @@ int main(int argc, char **argv)
 
             case 'm':
               draw_message_box(&fb, optarg, 75);
+              break;
+            case 'i':
+              handle_info_message(ts, &fb, optarg);
               break;
 
             case '?':
