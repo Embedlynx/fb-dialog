@@ -6,7 +6,6 @@
  * This file is placed under the LGPL.  Please see the file
  * COPYING for more details.
  *
- * Misc utils for ts test programs
  */
 #include <stdint.h>
 #include <stdio.h>
@@ -166,34 +165,33 @@ void display_progress(struct fb *fb, char *options)
     fb_progress_bar_destroy(progress);
 }
 
-void draw_message_text(struct fb *fb, int x, int y, char *message)
+void draw_string(struct fb *fb, int x, int y, char *message, int centered)
 {
     int line_length = fb->fix_screen_info.line_length;
     char *new_line = "\x0A";
     int lines = 0;
     char *text = strtok(message, new_line);
     int text_width = string_width(text);
-    int text_x = x + MESSAGE_BOX_WIDTH / 2 - text_width / 2;
-    drawStr816(text_x, y + MESSAGE_BOX_HEIGHT/2, makeColor(0xff, 0xff, 0xff), message, VGA_FONT_16, fb->screen, line_length);
+    int text_x = centered == 1 ? x - text_width / 2 : x;
+    drawStr816(text_x, y, makeColor(0xff, 0xff, 0xff), message, VGA_FONT_16, fb->screen, line_length);
 
     while ((text = strtok(NULL, new_line)) > 0) {
         lines++;
         text_width = string_width(text);
-        text_x = x + MESSAGE_BOX_WIDTH / 2 - text_width / 2;
-        drawStr816(text_x, y + MESSAGE_BOX_HEIGHT/2 + 18 * lines, makeColor(0xff, 0xff, 0xff), text, VGA_FONT_16, fb->screen, line_length);
+        text_x = centered == 1 ? x - text_width / 2 : x;
+        drawStr816(text_x, y + 18 * lines, makeColor(0xff, 0xff, 0xff), text, VGA_FONT_16, fb->screen, line_length);
     }
 }
 
 void draw_message_box(struct fb *fb, char *message, int y_pos)
 {
     int line_length = fb->fix_screen_info.line_length;
-    int text_width = string_width(message);
 
     int x = fb->w / 2 - MESSAGE_BOX_WIDTH / 2;
 
     drawRect(x, y_pos, x + MESSAGE_BOX_WIDTH, y_pos + MESSAGE_BOX_HEIGHT, makeColor(0x55, 0x55, 0x55), fb->screen, line_length);
 
-    draw_message_text(fb, x, y_pos, message);
+    draw_string(fb, fb->w / 2 , y_pos + MESSAGE_BOX_HEIGHT / 2, message, 1);
 }
 
 void handle_confirm(struct tsdev *ts, struct fb *fb, char *text_for_buttons)
@@ -275,9 +273,26 @@ void handle_info_message(struct tsdev *ts, struct fb *fb, char *args)
     fb_button_destroy(btn);
 }
 
+void show_metadata_message(struct fb *fb)
+{
+    char *left_message_text = getenv("FB_DIALOG_MESSAGE_LEFT");
+    int offset_x = 40;
+    int offset_y = 30;
+    if (left_message_text) {
+        draw_string(fb, offset_x, fb->h - offset_y, left_message_text, 0);
+    }
+
+    char *right_message_text = getenv("FB_DIALOG_MESSAGE_RIGHT");
+    
+    if (right_message_text) {
+        int text_width = string_width(right_message_text);
+        draw_string(fb, fb->w - text_width - offset_x, fb->h - offset_y, right_message_text, 0);
+    }
+}
+
 int main(int argc, char **argv)
 {
-	struct tsdev *ts = init_ts();
+    struct tsdev *ts = init_ts();
     if (!ts) {
         perror("Could not initialize touch screen");
         return 1;
@@ -311,6 +326,7 @@ int main(int argc, char **argv)
         if (c == -1)
             break;
 
+        show_metadata_message(&fb);
         switch (c) {
             case 'g':
               display_progress(&fb, optarg);
@@ -323,6 +339,7 @@ int main(int argc, char **argv)
             case 'm':
               draw_message_box(&fb, optarg, 75);
               break;
+
             case 'i':
               handle_info_message(ts, &fb, optarg);
               break;
